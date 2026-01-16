@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cerita Saya - Cendekia Aksara</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; color: #333; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .header {
+            background: white; padding: 15px 20px;
+            display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;
+        }
+        .header h2 { font-size: 1.1rem; color: #003366; }
+        .back-btn { font-size: 1.2rem; cursor: pointer; border: none; background: none; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .my-list { display: flex; flex-direction: column; gap: 15px; }
+
+        .my-card {
+            background: white; padding: 15px; border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; gap: 15px;
+            position: relative;
+        }
+
+        .mc-cover {
+            width: 60px; height: 90px; background: #eee; border-radius: 5px; object-fit: cover; flex-shrink: 0;
+        }
+
+        .mc-info { flex-grow: 1; }
+        .mc-title { font-weight: 700; font-size: 1rem; margin-bottom: 5px; }
+        .mc-stats { font-size: 0.8rem; color: #777; margin-bottom: 10px; }
+        
+        .action-row { display: flex; gap: 10px; }
+        .btn-act {
+            padding: 5px 12px; font-size: 0.8rem; border-radius: 15px; border: 1px solid #ddd;
+            background: white; cursor: pointer;
+        }
+        .btn-del { color: #dc3545; border-color: #dc3545; }
+
+        #loading { text-align: center; color: #999; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+        <h2>Karya Saya</h2>
+    </div>
+
+    <div class="container">
+        <div id="loading">Memuat karyamu...</div>
+        <div id="my-list" class="my-list"></div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from '../firebase-config.js';
+
+        auth.onAuthStateChanged(user => {
+            if(!user) window.location.href = '../index.html';
+            else loadMyStories(user.uid);
+        });
+
+        function loadMyStories(uid) {
+            db.collection("posts")
+              .where("authorId", "==", uid)
+              .orderBy("timestamp", "desc")
+              .onSnapshot(snapshot => {
+                  const list = document.getElementById('my-list');
+                  document.getElementById('loading').style.display = 'none';
+                  list.innerHTML = '';
+
+                  if(snapshot.empty) {
+                      list.innerHTML = '<p style="text-align:center; color:#999">Kamu belum menulis cerita apapun.</p>';
+                      return;
+                  }
+
+                  snapshot.forEach(doc => {
+                      const data = doc.data();
+                      const cover = data.coverUrl || 'https://via.placeholder.com/60x90?text=Cover';
+
+                      const item = document.createElement('div');
+                      item.className = 'my-card';
+                      item.innerHTML = `
+                          <img src="${cover}" class="mc-cover">
+                          <div class="mc-info">
+                              <div class="mc-title">${data.title}</div>
+                              <div class="mc-stats">
+                                  ${data.postType === 'series' ? 'Seri' : 'Cerpen'} • ❤️ ${data.likeCount||0} • 👁️ ${data.views||0}
+                              </div>
+                              <div class="action-row">
+                                  <button class="btn-act" onclick="alert('Fitur edit segera hadir!')">Edit</button>
+                                  <button class="btn-act btn-del" onclick="deleteStory('${doc.id}')">Hapus</button>
+                              </div>
+                          </div>
+                      `;
+                      list.appendChild(item);
+                  });
+              });
+        }
+
+        // Fungsi Hapus (Global scope agar bisa dipanggil onclick)
+        window.deleteStory = function(id) {
+            if(confirm("Yakin ingin menghapus cerita ini? Tidak bisa dibatalkan.")) {
+                db.collection("posts").doc(id).delete()
+                  .then(() => alert("Terhapus"))
+                  .catch(err => alert("Gagal hapus: " + err.message));
+            }
+        }
+    </script>
+</body>
+</html>
