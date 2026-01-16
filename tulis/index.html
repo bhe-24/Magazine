@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard Penulis - Cendekia Aksara</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        :root { --primary: #003366; --accent: #FFD700; --bg: #f8f9fa; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #333; }
+
+        /* HEADER */
+        .header {
+            background: white; padding: 15px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-btn { font-size: 1.2rem; cursor: pointer; border: none; background: none; }
+        .page-title { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+
+        /* MENU GRID */
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        
+        .welcome-msg { margin-bottom: 25px; }
+        .welcome-msg h2 { font-size: 1.5rem; color: var(--primary); }
+        .welcome-msg p { color: #666; font-size: 0.9rem; }
+
+        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        
+        .menu-card {
+            background: white; padding: 20px; border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex; align-items: center; gap: 20px;
+            border-left: 5px solid transparent;
+        }
+        .menu-card:active { transform: scale(0.98); }
+
+        /* Warna Border Tiap Menu */
+        .card-new { border-left-color: var(--primary); }
+        .card-my { border-left-color: var(--accent); }
+        .card-res { border-left-color: #28a745; }
+        .card-contest { border-left-color: #dc3545; }
+
+        .icon-box {
+            width: 50px; height: 50px; background: #f0f4f8; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .menu-info h3 { font-size: 1rem; margin-bottom: 3px; }
+        .menu-info p { font-size: 0.8rem; color: #777; }
+        .arrow { margin-left: auto; color: #ccc; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.location.href='../beranda/index.html'">✕</button>
+            <div class="page-title">Studio Menulis</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="welcome-msg">
+            <h2 id="user-name">Halo, Penulis!</h2>
+            <p>Apa yang ingin kamu ciptakan hari ini?</p>
+        </div>
+
+        <div class="menu-grid">
+            <div class="menu-card card-new" onclick="window.location.href='buat.html'">
+                <div class="icon-box">✍️</div>
+                <div class="menu-info">
+                    <h3>Buat Cerita Baru</h3>
+                    <p>Tulis karya orisinalmu dari awal</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+
+            <div class="menu-card card-my" onclick="window.location.href='karya.html'">
+                <div class="icon-box">📚</div>
+                <div class="menu-info">
+                    <h3>Cerita Saya</h3>
+                    <p>Edit, lanjutkan, atau hapus karyamu</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+
+            <div class="menu-card card-res" onclick="window.location.href='../beranda/komunitas.html'">
+                <div class="icon-box">💡</div>
+                <div class="menu-info">
+                    <h3>Sumber Penulis</h3>
+                    <p>Tips, trik, dan panduan menulis</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+
+            <div class="menu-card card-contest" onclick="window.location.href='../beranda/komunitas.html'">
+                <div class="icon-box">🏆</div>
+                <div class="menu-info">
+                    <h3>Kontes Menulis</h3>
+                    <p>Ikuti lomba dan menangkan hadiah</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from '../firebase-config.js';
+        
+        auth.onAuthStateChanged(user => {
+            if(!user) window.location.href = '../index.html';
+            else {
+                // Ambil nama user
+                db.collection("users").doc(user.uid).get().then(doc => {
+                    if(doc.exists) document.getElementById('user-name').innerText = `Halo, ${doc.data().name.split(' ')[0]}!`;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
