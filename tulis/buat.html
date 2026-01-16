@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Buat Cerita - Cendekia Aksara</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        :root { --primary: #003366; --bg: #fff; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #333; padding-bottom: 80px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+
+        .header {
+            padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 10;
+        }
+        .btn-cancel { color: #666; font-size: 0.9rem; cursor: pointer; border: none; background: none; }
+        .header h2 { font-size: 1.1rem; color: var(--primary); }
+        .btn-publish { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; }
+        .btn-publish:disabled { background: #ccc; cursor: not-allowed; }
+
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+
+        /* UPLOAD COVER AREA */
+        .cover-upload-box {
+            width: 140px; height: 210px; background: #f0f0f0; border: 2px dashed #ccc; border-radius: 8px;
+            margin: 0 auto 20px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; position: relative; overflow: hidden;
+        }
+        .cover-preview { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .upload-text { font-size: 0.8rem; color: #777; text-align: center; padding: 10px; }
+        #file-input { display: none; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; color: #555; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 0.95rem; background: #fafafa;
+        }
+        .form-input:focus { border-color: var(--primary); background: white; }
+
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9);
+            display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 50;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="btn-cancel" onclick="history.back()">Batal</button>
+        <h2>Cerita Baru</h2>
+        <button class="btn-publish" id="submit-btn">Terbitkan</button>
+    </div>
+
+    <div class="container">
+        <div class="cover-upload-box" onclick="document.getElementById('file-input').click()">
+            <img id="cover-preview" class="cover-preview">
+            <div id="upload-placeholder">
+                <span style="font-size:2rem;">📷</span>
+                <p class="upload-text">Tambah Sampul</p>
+            </div>
+            <input type="file" id="file-input" accept="image/*">
+        </div>
+
+        <form id="story-form">
+            <div class="form-group">
+                <label class="form-label">Judul Cerita</label>
+                <input type="text" id="title" class="form-input" placeholder="Berikan judul yang menarik" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Genre</label>
+                <select id="genre" class="form-select" required>
+                    <option value="">Pilih Genre...</option>
+                    <option value="Romansa">Romansa</option>
+                    <option value="Fantasi">Fantasi</option>
+                    <option value="Horor">Horor</option>
+                    <option value="Fiksi Remaja">Fiksi Remaja</option>
+                    <option value="Misteri">Misteri</option>
+                    <option value="Non-Fiksi">Non-Fiksi</option>
+                    </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Tipe Cerita</label>
+                <select id="type" class="form-select">
+                    <option value="single">Cerpen / Artikel (Selesai)</option>
+                    <option value="series">Novel / Bersambung</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" id="content-label">Isi Cerita</label>
+                <textarea id="content" class="form-textarea" rows="12" placeholder="Mulailah menulismu di sini..." required></textarea>
+            </div>
+        </form>
+    </div>
+
+    <div id="loading-overlay">
+        <p>Mengunggah sampul & menerbitkan...</p>
+    </div>
+
+    <script type="module">
+        import { auth, db, firebase } from '../firebase-config.js';
+        import 'https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js'; // Import Storage Manual
+
+        let currentUser = null;
+        let selectedFile = null;
+
+        auth.onAuthStateChanged(user => {
+            if (!user) window.location.href = '../index.html';
+            currentUser = user;
+        });
+
+        // Preview Gambar
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('cover-preview').src = e.target.result;
+                    document.getElementById('cover-preview').style.display = 'block';
+                    document.getElementById('upload-placeholder').style.display = 'none';
+                }
+                reader.readAsDataURL(selectedFile);
+            }
+        });
+
+        // Submit
+        document.getElementById('submit-btn').onclick = async () => {
+            const title = document.getElementById('title').value;
+            const genre = document.getElementById('genre').value;
+            const type = document.getElementById('type').value;
+            const content = document.getElementById('content').value;
+
+            if (!title || !genre || !content) {
+                alert("Mohon lengkapi judul, genre, dan isi.");
+                return;
+            }
+
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('submit-btn').disabled = true;
+
+            try {
+                let coverUrl = null;
+
+                // 1. Upload Gambar (Jika ada)
+                if (selectedFile) {
+                    const storageRef = firebase.storage().ref();
+                    const fileRef = storageRef.child(`covers/${Date.now()}_${selectedFile.name}`);
+                    await fileRef.put(selectedFile);
+                    coverUrl = await fileRef.getDownloadURL();
+                }
+
+                // 2. Simpan Data ke Firestore
+                let postData = {
+                    title: title,
+                    genre: genre,
+                    postType: type,
+                    authorId: currentUser.uid,
+                    authorName: currentUser.displayName || "Penulis", // Pastikan nama ada
+                    coverUrl: coverUrl,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    likeCount: 0,
+                    commentCount: 0,
+                    views: 0
+                };
+
+                // Logic data user
+                const userDoc = await db.collection("users").doc(currentUser.uid).get();
+                if(userDoc.exists) {
+                    postData.authorName = userDoc.data().name;
+                }
+
+                if (type === 'series') {
+                    postData.description = content; 
+                    postData.chapterCount = 0;
+                } else {
+                    postData.content = content;
+                }
+
+                await db.collection("posts").add(postData);
+                
+                // Update counter
+                await db.collection("users").doc(currentUser.uid).update({
+                    karyaCount: firebase.firestore.FieldValue.increment(1)
+                });
+
+                alert("Berhasil diterbitkan!");
+                window.location.href = 'karya.html'; // Pindah ke list karya
+
+            } catch (error) {
+                console.error(error);
+                alert("Gagal: " + error.message);
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('submit-btn').disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
