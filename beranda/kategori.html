@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kategori - Cendekia Aksara</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        :root { --primary: #003366; --accent: #FFD700; --bg: #FAFAFA; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #333; }
+
+        /* HEADER */
+        .header {
+            position: sticky; top: 0; z-index: 100;
+            background: #fff; padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-btn { font-size: 1.2rem; cursor: pointer; border:none; background:none; }
+        .page-title { font-weight: 700; font-size: 1.1rem; color: var(--primary); }
+        .tag-pill { background: var(--accent); font-size: 0.75rem; padding: 4px 10px; border-radius: 15px; font-weight: 600; }
+
+        /* LIST CERITA */
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .story-list { display: flex; flex-direction: column; gap: 15px; }
+
+        /* ITEM CERITA (List View) */
+        .story-item {
+            display: flex; gap: 15px;
+            background: #fff; padding: 10px; border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .story-item:active { transform: scale(0.98); }
+        
+        .story-cover {
+            width: 70px; height: 105px; /* Rasio cover buku */
+            background: #eee; border-radius: 4px; object-fit: cover; flex-shrink: 0;
+        }
+        
+        .story-info { display: flex; flex-direction: column; justify-content: center; width: 100%; }
+        .s-title { font-weight: 700; font-size: 1rem; margin-bottom: 5px; line-height: 1.2; }
+        .s-author { font-size: 0.8rem; color: #666; margin-bottom: 8px; }
+        .s-desc { 
+            font-size: 0.8rem; color: #444; 
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .s-meta { font-size: 0.7rem; color: #999; display: flex; gap: 10px; }
+
+        #empty-msg { text-align: center; color: #999; margin-top: 50px; display: none; }
+        #loading { text-align: center; margin-top: 20px; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.history.back()">←</button>
+            <div>
+                <div class="page-title" id="genre-title">Memuat...</div>
+                <small style="color:#666">Daftar cerita</small>
+            </div>
+        </div>
+        <div class="tag-pill" id="genre-pill">...</div>
+    </div>
+
+    <div class="container">
+        <div id="loading">Mencari cerita...</div>
+        <div id="empty-msg">Belum ada cerita di genre ini.</div>
+        <div id="story-list" class="story-list">
+            </div>
+    </div>
+
+    <script type="module">
+        import { db } from '../firebase-config.js';
+
+        // 1. Ambil Parameter Genre dari URL
+        const params = new URLSearchParams(window.location.search);
+        const genre = params.get('genre');
+
+        const titleEl = document.getElementById('genre-title');
+        const pillEl = document.getElementById('genre-pill');
+        const listEl = document.getElementById('story-list');
+        const loadingEl = document.getElementById('loading');
+        const emptyEl = document.getElementById('empty-msg');
+
+        if (!genre) {
+            titleEl.innerText = "Genre Tidak Ditemukan";
+            loadingEl.style.display = 'none';
+        } else {
+            // Update Header
+            titleEl.innerText = genre;
+            pillEl.innerText = `#${genre}`;
+
+            // 2. Query Firebase berdasarkan Genre
+            // Pastikan nanti saat upload cerita (di Tulis), field 'genre' diisi dengan nama yang sama persis
+            db.collection("posts")
+              .where("genre", "==", genre) // Filter Genre
+              .orderBy("timestamp", "desc")
+              .get()
+              .then(snapshot => {
+                  loadingEl.style.display = 'none';
+                  
+                  if (snapshot.empty) {
+                      emptyEl.style.display = 'block';
+                      return;
+                  }
+
+                  // Render Hasil
+                  snapshot.forEach(doc => {
+                      const data = doc.data();
+                      
+                      // Cover Placeholder logic
+                      let coverSrc = data.coverUrl ? data.coverUrl : 'https://via.placeholder.com/70x105/003366/fff?text=No+Cover';
+                      
+                      const item = document.createElement('div');
+                      item.className = 'story-item';
+                      item.onclick = () => window.location.href = `../detail.html?id=${doc.id}`; // Ke Detail
+
+                      item.innerHTML = `
+                          <img src="${coverSrc}" class="story-cover" alt="Cover">
+                          <div class="story-info">
+                              <div class="s-title">${data.title}</div>
+                              <div class="s-author">oleh ${data.authorName}</div>
+                              <div class="s-desc">${data.description || data.content}</div>
+                              <div class="s-meta">
+                                  <span>👁️ ${data.views || 0}</span>
+                                  <span>★ ${data.likeCount || 0}</span>
+                                  <span>📄 ${data.postType === 'series' ? (data.chapterCount || 0) + ' Bab' : 'Cerpen'}</span>
+                              </div>
+                          </div>
+                      `;
+                      listEl.appendChild(item);
+                  });
+              })
+              .catch(err => {
+                  loadingEl.style.display = 'none';
+                  console.error(err);
+                  // Jika error karena index belum dibuat di Firebase Console
+                  if(err.message.includes("index")) {
+                      alert("Admin: Harap buat Index di Firebase Console (Link ada di Console Log browser).");
+                  }
+              });
+        }
+    </script>
+</body>
+</html>
