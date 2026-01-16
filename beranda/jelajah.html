@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jelajah Genre - Cendekia Aksara</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        :root { --primary: #003366; --bg: #FAFAFA; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #333; padding-bottom: 40px; }
+        a { text-decoration: none; color: inherit; }
+
+        /* --- HEADER --- */
+        .header {
+            position: sticky; top: 0; z-index: 100;
+            background: #fff; padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; align-items: center; gap: 15px;
+        }
+        .back-btn { font-size: 1.2rem; cursor: pointer; }
+        .page-title { font-weight: 700; font-size: 1.1rem; }
+
+        /* --- GRID GENRE --- */
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        
+        .genre-grid {
+            display: grid;
+            /* Mobile: 2 Kolom, Desktop: menyesuaikan */
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .genre-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* --- KARTU GENRE (Desain Separuh Warna/Gambar) --- */
+        .genre-card {
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            display: flex; align-items: center;
+        }
+        .genre-card:active { transform: scale(0.98); }
+
+        /* Layer Background (Gambar + Warna) */
+        .card-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            /* Trik Gradient: 60% warna solid kiri, sisa transparan (gambar terlihat) */
+            /* Warna akan di-inject via JS */
+        }
+
+        /* Teks Nama Genre */
+        .genre-name {
+            position: relative; z-index: 2;
+            color: white; font-weight: 700; font-size: 0.95rem;
+            margin-left: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            max-width: 60%; /* Agar tidak nabrak gambar */
+            line-height: 1.2;
+        }
+
+        /* Spinner Loading */
+        #loading { text-align: center; margin-top: 20px; color: #999; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="back-btn" onclick="window.history.back()">←</div>
+        <div class="page-title">Jelajah Genre</div>
+    </div>
+
+    <div class="container">
+        <div id="grid-container" class="genre-grid">
+            </div>
+        <div id="loading">Memuat genre...</div>
+    </div>
+
+    <script>
+        // DAFTAR 22 GENRE (Nama, Warna Hex, URL Gambar Placeholder)
+        // Note: Saya pakai placeholder 'via.placeholder.com', nanti kamu ganti URL-nya dengan gambar cover genre aslimu.
+        const genres = [
+            { name: "Romansa", color: "#E91E63", img: "https://via.placeholder.com/150/FFC0CB/000?text=❤️" },
+            { name: "Fantasi", color: "#673AB7", img: "https://via.placeholder.com/150/4B0082/fff?text=🧙‍♂️" },
+            { name: "Fiksi Ilmiah", color: "#00BCD4", img: "https://via.placeholder.com/150/00FFFF/000?text=👽" },
+            { name: "Horor", color: "#212121", img: "https://via.placeholder.com/150/000000/fff?text=👻" },
+            { name: "Misteri", color: "#607D8B", img: "https://via.placeholder.com/150/708090/fff?text=🕵️" },
+            { name: "Petualangan", color: "#4CAF50", img: "https://via.placeholder.com/150/228B22/fff?text=🗺️" },
+            { name: "Fiksi Remaja", color: "#FF9800", img: "https://via.placeholder.com/150/FFA500/fff?text=🎒" },
+            { name: "Fanfiction", color: "#9C27B0", img: "https://via.placeholder.com/150/800080/fff?text=🎤" },
+            { name: "Sejarah", color: "#795548", img: "https://via.placeholder.com/150/8B4513/fff?text=🏰" },
+            { name: "Thriller", color: "#D32F2F", img: "https://via.placeholder.com/150/8B0000/fff?text=🔪" },
+            { name: "Paranormal", color: "#512DA8", img: "https://via.placeholder.com/150/483D8B/fff?text=🔮" },
+            { name: "Werewolf", color: "#3E2723", img: "https://via.placeholder.com/150/2F4F4F/fff?text=🐺" },
+            { name: "Vampir", color: "#880E4F", img: "https://via.placeholder.com/150/800000/fff?text=🧛" },
+            { name: "Non-Fiksi", color: "#009688", img: "https://via.placeholder.com/150/20B2AA/fff?text=📘" },
+            { name: "Spiritual", color: "#03A9F4", img: "https://via.placeholder.com/150/87CEEB/fff?text=🕊️" },
+            { name: "Klasik", color: "#8D6E63", img: "https://via.placeholder.com/150/D2691E/fff?text=📜" },
+            { name: "Puisi", color: "#EC407A", img: "https://via.placeholder.com/150/FF69B4/fff?text=✒️" },
+            { name: "Humor", color: "#FFC107", img: "https://via.placeholder.com/150/FFD700/fff?text=😂" },
+            { name: "Aksi", color: "#F44336", img: "https://via.placeholder.com/150/FF4500/fff?text=💥" },
+            { name: "Drama", color: "#3F51B5", img: "https://via.placeholder.com/150/0000CD/fff?text=🎭" },
+            { name: "LGBTQ+", color: "#9E9E9E", img: "https://via.placeholder.com/150/gray/fff?text=🌈" }, // Warna netral atau pelangi gradient khusus
+            { name: "Umum", color: "#455A64", img: "https://via.placeholder.com/150/778899/fff?text=🌐" }
+        ];
+
+        const container = document.getElementById('grid-container');
+        const loading = document.getElementById('loading');
+
+        // Render Grid
+        genres.forEach(g => {
+            const card = document.createElement('div');
+            card.className = 'genre-card';
+            
+            // Logic klik: Pindah ke halaman kategori dengan parameter
+            // encodeURIComponent agar spasi/simbol aman di URL
+            card.onclick = () => {
+                window.location.href = `kategori.html?genre=${encodeURIComponent(g.name)}`;
+            };
+
+            // HTML Isi Kartu
+            // Style background: Linear Gradient warna solid di kiri (60%), transparan di kanan (40%) menimpa gambar
+            card.innerHTML = `
+                <div class="card-bg" style="
+                    background-image: linear-gradient(110deg, ${g.color} 55%, transparent 55%), url('${g.img}');
+                "></div>
+                <div class="genre-name">${g.name}</div>
+            `;
+            container.appendChild(card);
+        });
+
+        loading.style.display = 'none';
+    </script>
+</body>
+</html>
