@@ -8,8 +8,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
         :root {
-            --primary: #003366; /* Navy */
-            --accent: #FFD700;  /* Kuning */
+            --primary: #003366;
+            --accent: #FFD700;
             --bg: #FAFAFA;
             --text: #222;
         }
@@ -18,7 +18,7 @@
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); padding-top: 70px; padding-bottom: 80px;}
         a { text-decoration: none; color: inherit; }
 
-        /* --- NAVBAR --- */
+        /* NAVBAR */
         .navbar {
             position: fixed; top: 0; left: 0; width: 100%; height: 70px;
             background: #fff; display: flex; align-items: center; justify-content: space-between;
@@ -27,86 +27,68 @@
         .nav-left { display: flex; align-items: center; gap: 20px; }
         .brand-logo { height: 40px; width: auto; }
         .nav-links { display: flex; gap: 20px; font-size: 0.9rem; font-weight: 600; color: #555; }
-        @media (max-width: 768px) { .nav-links { display: none; } } /* Hide menu text on mobile */
+        @media (max-width: 768px) { .nav-links { display: none; } }
 
         .search-container { flex-grow: 1; max-width: 500px; margin: 0 20px; position: relative; }
-        @media (max-width: 768px) { .search-container { display: none; } } /* Hide search bar on mobile */
+        @media (max-width: 768px) { .search-container { display: none; } }
 
-        .search-input {
-            width: 100%; padding: 10px 15px 10px 40px;
-            background: #f0f0f0; border: 1px solid transparent; border-radius: 20px;
-        }
+        .search-input { width: 100%; padding: 10px 15px 10px 40px; background: #f0f0f0; border: 1px solid transparent; border-radius: 20px; }
         .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #999; }
 
         .nav-right { display: flex; align-items: center; gap: 15px; }
-        .btn-write { 
-            background: var(--primary); color: white; padding: 8px 20px; 
-            border-radius: 20px; font-weight: 600; font-size: 0.9rem;
-        }
-        .profile-avatar {
-            width: 35px; height: 35px; border-radius: 50%; background: #ddd;
-            overflow: hidden; cursor: pointer; border: 2px solid var(--accent);
-        }
+        .btn-write { background: var(--primary); color: white; padding: 8px 20px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
+        .profile-avatar { width: 35px; height: 35px; border-radius: 50%; background: #ddd; overflow: hidden; cursor: pointer; border: 2px solid var(--accent); }
         .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- CONTENT LAYOUT --- */
+        /* CONTENT */
         .main-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-        .section-header { 
-            margin-bottom: 15px; margin-top: 20px; 
-            display: flex; justify-content: space-between; align-items: center; 
-        }
+        .section-header { margin-bottom: 15px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
         .section-title { font-size: 1.2rem; font-weight: 700; color: #222; }
         .see-all { font-size: 0.85rem; color: #666; font-weight: 600; cursor: pointer;}
 
-        /* --- HORIZONTAL SCROLL (Wattpad Style) --- */
+        /* CAROUSEL */
         .story-carousel {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding-bottom: 15px;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none; /* Hide scrollbar Firefox */
+            display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px;
+            scroll-snap-type: x mandatory; scrollbar-width: none;
+            min-height: 200px; /* Tinggi minimal agar pesan kosong terlihat */
+            align-items: center; /* Center pesan kosong secara vertikal */
         }
-        .story-carousel::-webkit-scrollbar { display: none; /* Hide scrollbar Chrome */ }
+        .story-carousel::-webkit-scrollbar { display: none; }
 
-        /* --- CARD DESIGN --- */
-        .story-card {
-            flex: 0 0 auto; width: 130px; /* Fixed width */
-            scroll-snap-align: start; cursor: pointer;
-            transition: transform 0.2s;
-        }
+        /* CARD */
+        .story-card { flex: 0 0 auto; width: 130px; scroll-snap-align: start; cursor: pointer; transition: transform 0.2s; }
         .story-card:active { transform: scale(0.95); }
 
         .cover-wrapper {
-            width: 100%; aspect-ratio: 2/3; /* Portrait Cover */
-            border-radius: 8px; overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            background: #eee; position: relative;
-            margin-bottom: 8px;
+            width: 100%; aspect-ratio: 2/3; border-radius: 8px; overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: #eee; position: relative; margin-bottom: 8px;
         }
         .cover-img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Placeholder jika tidak ada cover */
         .no-cover {
-            width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center; text-align: center;
-            background: linear-gradient(135deg, var(--primary), #005a9c);
-            color: white; font-size: 0.8rem; padding: 5px; font-weight: bold;
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center;
+            background: linear-gradient(135deg, var(--primary), #005a9c); color: white; font-size: 0.8rem; padding: 5px; font-weight: bold;
         }
 
-        .story-title {
-            font-size: 0.9rem; font-weight: 700; color: #333;
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-            line-height: 1.3; margin-bottom: 3px;
-        }
+        .story-title { font-size: 0.9rem; font-weight: 700; color: #333; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; margin-bottom: 3px; }
         .story-author { font-size: 0.75rem; color: #777; }
         
         .badge-rank {
-            position: absolute; top: 5px; left: 5px;
-            background: var(--accent); color: var(--primary);
-            font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: absolute; top: 5px; left: 5px; background: var(--accent); color: var(--primary);
+            font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* EMPTY STATE STYLE */
+        .empty-state {
+            width: 100%; text-align: center; padding: 20px;
+            background: #fff; border-radius: 10px; border: 2px dashed #ddd;
+            color: #777; font-size: 0.9rem;
+        }
+        .empty-icon { font-size: 2rem; display: block; margin-bottom: 10px; }
+        .btn-empty-action {
+            display: inline-block; margin-top: 10px; padding: 5px 15px;
+            background: var(--primary); color: white; border-radius: 15px; font-size: 0.8rem;
         }
 
     </style>
@@ -120,10 +102,6 @@
                 <a href="jelajah.html">Jelajah</a>
                 <a href="komunitas.html">Komunitas</a>
             </div>
-        </div>
-        <div class="search-container">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" placeholder="Cari cerita...">
         </div>
         <div class="nav-right">
             <a href="../tulis/index.html" class="btn-write">Tulis</a>
@@ -140,15 +118,15 @@
             <div class="see-all" onclick="window.location.href='komunitas.html'">Lihat Semua ></div>
         </div>
         <div id="editor-picks" class="story-carousel">
-            <p style="padding:10px; color:#999;">Memuat data populer...</p>
+            <p style="padding:10px; color:#999; width:100%; text-align:center;">Memeriksa data populer...</p>
         </div>
 
         <div class="section-header">
-            <h2 class="section-title">Baru Diperbarui</h2>
+            <h2 class="section-title">Cerita Terbaru</h2>
             <div class="see-all" onclick="window.location.href='jelajah.html'">Lihat Semua ></div>
         </div>
         <div id="recent-stories" class="story-carousel">
-            <p style="padding:10px; color:#999;">Memuat data terbaru...</p>
+            <p style="padding:10px; color:#999; width:100%; text-align:center;">Memeriksa cerita baru...</p>
         </div>
 
     </div>
@@ -168,68 +146,76 @@
             }
         });
 
-        // FUNGSI 1: LOAD PILIHAN EDITOR (Ranking Like)
+        // FUNGSI 1: LOAD EDITOR PICKS
         function loadEditorPicks() {
-            // Kita ambil 5 cerita dengan like terbanyak
             db.collection("posts")
               .orderBy("likeCount", "desc")
               .limit(5)
-              .get() // Pakai get() biar ringan, tidak perlu realtime stream untuk rekomendasi
+              .get()
               .then(snapshot => {
-                  renderStories('editor-picks', snapshot.docs, true); // true = pakai badge ranking
+                  renderStories('editor-picks', snapshot.docs, true, "Belum ada cerita populer.");
               })
-              .catch(err => console.error("Gagal load editor picks:", err));
+              .catch(err => {
+                  console.error("Error editor picks:", err);
+                  // Tampilkan pesan error/kosong di layar agar user tahu
+                  renderEmptyState('editor-picks', "Belum ada data (Perlu upload cerita dulu).");
+              });
         }
 
-        // FUNGSI 2: LOAD TERBARU (Semua data yang ada)
+        // FUNGSI 2: LOAD RECENT STORIES
         function loadRecentStories() {
-            // Ambil 10 cerita terbaru berdasarkan timestamp
             db.collection("posts")
               .orderBy("timestamp", "desc")
               .limit(10)
-              .onSnapshot(snapshot => {
-                  renderStories('recent-stories', snapshot.docs, false);
-              }, err => {
-                  console.error("Gagal load recent:", err);
-                  // Fallback jika error (misal index belum dibuat), coba ambil tanpa order
+              .get() // Ubah ke get() dulu agar lebih stabil saat data kosong
+              .then(snapshot => {
+                  renderStories('recent-stories', snapshot.docs, false, "Belum ada cerita terbaru.");
+              })
+              .catch(err => {
+                  console.error("Error recent:", err);
+                  // Fallback jika error (biasanya karena index belum ada)
                   if(err.message.includes("index")) {
-                      console.log("Mencoba ambil data tanpa sorting...");
-                      db.collection("posts").limit(10).get().then(snap => renderStories('recent-stories', snap.docs, false));
+                      renderEmptyState('recent-stories', "Sistem sedang mengindeks data. Coba refresh sebentar lagi.");
+                  } else {
+                      renderEmptyState('recent-stories', "Belum ada cerita terbaru.");
                   }
               });
         }
 
-        // HELPER: Render HTML Kartu
-        function renderStories(containerId, docs, showRank) {
+        // HELPER: RENDER KARTU
+        function renderStories(containerId, docs, showRank, emptyMessage) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
 
+            // CEK APAKAH DATA KOSONG?
             if (docs.length === 0) {
-                container.innerHTML = '<p style="padding:10px; color:#999; font-size:0.9rem;">Belum ada cerita yang tersedia.</p>';
+                // TAMPILKAN TAMPILAN KOSONG YANG CANTIK
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">📭</span>
+                        <div>${emptyMessage}</div>
+                        <a href="../tulis/index.html" class="btn-empty-action">Mulai Menulis</a>
+                    </div>
+                `;
+                // Ubah style carousel agar item kosong berada di tengah
+                container.style.justifyContent = 'center'; 
                 return;
             }
 
+            // JIKA ADA DATA
+            container.style.justifyContent = 'flex-start'; // Kembalikan ke kiri
             let rank = 1;
             docs.forEach(doc => {
                 const data = doc.data();
                 
-                // Cover Handling
-                let coverHTML = '';
-                if (data.coverUrl) {
-                    coverHTML = `<img src="${data.coverUrl}" class="cover-img" alt="Cover" loading="lazy">`;
-                } else {
-                    coverHTML = `<div class="no-cover">${data.title}</div>`;
-                }
+                let coverHTML = data.coverUrl 
+                    ? `<img src="${data.coverUrl}" class="cover-img" alt="Cover" loading="lazy">`
+                    : `<div class="no-cover">${data.title}</div>`;
 
-                // Badge Rank (Hanya untuk Editor Picks)
-                let badgeHTML = '';
-                if (showRank) {
-                    badgeHTML = `<div class="badge-rank">#${rank}</div>`;
-                }
+                let badgeHTML = showRank ? `<div class="badge-rank">#${rank}</div>` : '';
 
                 const card = document.createElement('div');
                 card.className = 'story-card';
-                // Link ke Detail (Naik satu folder ke root)
                 card.onclick = () => window.location.href = `../detail.html?id=${doc.id}`;
 
                 card.innerHTML = `
@@ -244,6 +230,19 @@
                 container.appendChild(card);
                 rank++;
             });
+        }
+
+        // HELPER: RENDER PESAN ERROR/KOSONG MANUAL
+        function renderEmptyState(containerId, msg) {
+            const container = document.getElementById(containerId);
+            container.style.justifyContent = 'center';
+            container.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">⚠️</span>
+                    <div>${msg}</div>
+                    <a href="../tulis/index.html" class="btn-empty-action">Coba Tulis Sesuatu</a>
+                </div>
+            `;
         }
     </script>
 </body>
