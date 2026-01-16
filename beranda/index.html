@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Beranda - Cendekia Aksara</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        :root {
+            --primary: #003366; /* Navy */
+            --accent: #FFD700;  /* Kuning */
+            --bg: #FAFAFA;
+            --text: #222;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); padding-top: 70px; }
+        a { text-decoration: none; color: inherit; }
+
+        /* --- HEADER NAVBAR (Wattpad Style) --- */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+            background: #fff; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000;
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .brand-logo { height: 40px; width: auto; }
+        
+        .nav-links { display: flex; gap: 20px; font-size: 0.9rem; font-weight: 600; color: #555; }
+        .nav-links a:hover { color: var(--primary); }
+        .nav-links .active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+        /* Search Bar */
+        .search-container { flex-grow: 1; max-width: 600px; margin: 0 20px; position: relative; }
+        .search-input {
+            width: 100%; padding: 10px 15px 10px 40px;
+            background: #f0f0f0; border: 1px solid transparent; border-radius: 20px;
+            font-family: inherit; transition: 0.3s;
+        }
+        .search-input:focus { background: #fff; border-color: #ddd; outline: none; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #999; }
+
+        .nav-right { display: flex; align-items: center; gap: 15px; }
+        .btn-write { 
+            background: var(--primary); color: white; padding: 8px 20px; 
+            border-radius: 20px; font-weight: 600; font-size: 0.9rem;
+        }
+        .profile-avatar {
+            width: 35px; height: 35px; border-radius: 50%; background: #ddd;
+            overflow: hidden; cursor: pointer; border: 2px solid var(--accent);
+        }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- CONTENT SECTION --- */
+        .main-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        .section-header { margin-bottom: 15px; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .section-title { font-size: 1.2rem; font-weight: 700; color: #222; }
+        .see-all { font-size: 0.85rem; color: #666; font-weight: 600; }
+
+        /* --- HORIZONTAL SCROLL LAYOUT (Mobile Friendly) --- */
+        .scroll-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .story-carousel {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 15px; /* Ruang untuk scrollbar */
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch; /* Smooth scroll di iOS */
+            /* Sembunyikan Scrollbar default tapi tetap bisa scroll */
+            scrollbar-width: none; /* Firefox */
+        }
+        .story-carousel::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+
+        /* --- STORY CARD (Cover Buku) --- */
+        .story-card {
+            flex: 0 0 auto; /* Jangan menyusut */
+            width: 140px;   /* Lebar fix di mobile/desktop agar seragam */
+            scroll-snap-align: start;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .story-card:hover { transform: translateY(-5px); }
+
+        .cover-wrapper {
+            width: 100%;
+            aspect-ratio: 2 / 3; /* Rasio Cover Buku Standar */
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #eee;
+            position: relative;
+        }
+        
+        .cover-img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        
+        /* Jika tidak ada gambar (Placeholder) */
+        .no-cover {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(45deg, var(--primary), #005a9c);
+            color: white; font-weight: bold; text-align: center; padding: 5px;
+            font-size: 0.8rem;
+        }
+
+        .story-info { margin-top: 10px; }
+        .story-title {
+            font-size: 0.95rem; font-weight: 700; color: #333;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .story-author { font-size: 0.8rem; color: #777; }
+        
+        /* Stats kecil di bawah author */
+        .story-stats { display: flex; gap: 10px; font-size: 0.7rem; color: #999; margin-top: 2px; }
+
+        /* --- RESPONSIVE BREAKPOINTS --- */
+        @media (max-width: 768px) {
+            .navbar { padding: 0 15px; height: 60px; }
+            .nav-links { display: none; /* Sembunyikan menu teks di mobile, ganti burger menu nanti */ }
+            .brand-logo { height: 30px; }
+            .search-container { display: none; /* Bisa diganti icon search */ }
+            
+            /* Tampilkan Search icon sebagai gantinya (opsional) */
+            .mobile-search-trigger { display: block; font-size: 1.2rem; margin-right: 15px; }
+
+            /* Story Card Mobile Lebih Kecil Sedikit */
+            .story-card { width: 120px; }
+            .section-title { font-size: 1.1rem; }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-search-trigger { display: none; }
+            /* Desktop Grid: Jika user ingin Grid, uncomment bawah ini. 
+               Tapi request user "geser kanan kiri", jadi kita pertahankan carousel 
+               namun dengan scrollbar custom yang cantik */
+            
+            .story-carousel {
+                /* Scrollbar custom untuk desktop */
+                scrollbar-width: thin;
+                scrollbar-color: #ddd transparent;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="https://imgur.com/5Srjyo4.png" alt="Cendekia Aksara" class="brand-logo" onerror="this.src='https://via.placeholder.com/100x40?text=Logo'">
+            
+            <div class="nav-links">
+                <a href="jelajah.html">Jelajah</a>
+                <a href="komunitas.html">Komunitas</a>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="Cari cerita, penulis, atau reading list...">
+        </div>
+
+        <div class="nav-right">
+            <div class="mobile-search-trigger">🔍</div>
+            <a href="../tulis/index.html" class="btn-write">Tulis</a>
+            <div class="profile-avatar" onclick="window.location.href='profil.html'">
+                <img id="user-avatar" src="https://via.placeholder.com/40" alt="Profile">
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+
+        <div class="section-header">
+            <h2 class="section-title">Pilihan Editor</h2>
+            <a href="jelajah.html" class="see-all">Lihat Semua ></a>
+        </div>
+        <div class="scroll-wrapper">
+            <div id="editor-picks" class="story-carousel">
+                <p style="color:#999; padding: 20px;">Memuat pilihan editor...</p>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2 class="section-title">Cerita dari penulis yang kamu suka</h2>
+            <a href="jelajah.html" class="see-all">Lihat Semua ></a>
+        </div>
+        <div class="scroll-wrapper">
+            <div id="following-stories" class="story-carousel">
+                <p style="color:#999; padding: 20px;">Memuat cerita...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        // Perhatikan path '../' karena kita ada di dalam folder 'beranda'
+        import { auth, db, firebase } from '../firebase-config.js';
+
+        // 1. Cek Login
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = '../index.html'; // Balik ke root/login
+            } else {
+                // Load Avatar User
+                document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=0D8ABC&color=fff`;
+                
+                // Load Data Cerita
+                loadStories();
+            }
+        });
+
+        // 2. Fungsi Load Cerita
+        function loadStories() {
+            // Kita ambil semua post untuk demo (nanti bisa difilter based on tags/editor pick)
+            db.collection("posts").orderBy("timestamp", "desc").limit(10).onSnapshot(snapshot => {
+                renderCarousel('editor-picks', snapshot.docs);
+                renderCarousel('following-stories', snapshot.docs); // Untuk demo, datanya sama dulu
+            });
+        }
+
+        // 3. Render Card ke dalam Carousel
+        function renderCarousel(elementId, docs) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+
+            if (docs.length === 0) {
+                container.innerHTML = '<p style="padding:10px;">Belum ada cerita.</p>';
+                return;
+            }
+
+            docs.forEach(doc => {
+                const data = doc.data();
+                
+                // LOGIKA COVER:
+                // Nanti saat kita buat fitur "Tulis", kita akan simpan URL gambar di field 'coverUrl'.
+                // Jika tidak ada 'coverUrl', kita pakai placeholder warna.
+                
+                let coverHTML = '';
+                if (data.coverUrl) {
+                    coverHTML = `<img src="${data.coverUrl}" class="cover-img" alt="${data.title}">`;
+                } else {
+                    // Fallback jika belum upload cover
+                    coverHTML = `<div class="no-cover">${data.title}</div>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'story-card';
+                card.onclick = () => window.location.href = `../detail.html?id=${doc.id}`; // Arahkan ke detail di root (atau folder beranda jika mau dipindah)
+                
+                card.innerHTML = `
+                    <div class="cover-wrapper">
+                        ${coverHTML}
+                    </div>
+                    <div class="story-info">
+                        <div class="story-title">${data.title}</div>
+                        <div class="story-author">by ${data.authorName || 'Penulis'}</div>
+                        <div class="story-stats">
+                            <span>👁️ ${data.views || 0}</span>
+                            <span>★ ${data.likeCount || 0}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
